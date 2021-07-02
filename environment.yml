@@ -1,3 +1,4 @@
+name: cloudmetrics
 dependencies:
   - python>=3.5
   - cython
