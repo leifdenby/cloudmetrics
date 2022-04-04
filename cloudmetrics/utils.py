@@ -14,7 +14,7 @@ def create_circular_mask(h, w):
     return mask
 
 
-def make_periodic_field(mask, object_connectivity):
+def make_periodic_mask(mask, object_connectivity):
     """
     Apply periodic BCs to (cloud) mask fields by:
 
@@ -30,15 +30,16 @@ def make_periodic_field(mask, object_connectivity):
     ----------
     field : (npx,npx) numpy array
         (Cloud) mask field
+    object_connectivity:
+        Maximum number of orthogonal hops to consider a pixel/voxel as a
+        neighbor. Accepted values are ranging from 1 to input.ndim
 
     Returns
     -------
     Field of (2*npx,2*npx), with (cloud) objects that cross boundaries translated
     to contiguous structures crossing the northern/eastern boundaries.
     """
-
-    # Questions remaining:
-    # - How to handle regions whose cog lies outside the original image?
+    # TODO: How to handle regions whose cog lies outside the original image?
 
     ny, nx = mask.shape
 
