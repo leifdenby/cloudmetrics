@@ -1,12 +1,82 @@
 # cloudmetrics
-An end-to-end implementation to download, characterise and analyse cloud field patterns in satellite observations, using metrics and principal component analysis.
 
-Follow process stream in main.py to:
-  1. Download images and cloud products from NASA's MODAPS API to its LAADS archive of observations from the MODIS instrument aboard the Aqua and Terra satellites
-  2. Preprocess and store data in compressed (.h5) Pandas dataframes
-  3. Compute 36 metrics of the cloud fields using the Metrics module
-  4. Analyse several components of the resulting metric dataset with PCA, clustering and plotting routines.
+[![cloudmetrics](https://github.com/cloudsci/cloudmetrics/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/cloudsci/cloudmetrics/actions/workflows/python-package-conda.yml)
 
-The Metrics module also serves well as a stand-alone product. Given any square input field with a shape that is a power of 2, each metric object has a method (metric) that facilitates quick computation of that particular metric. Wrapper functions for computing ranges of metrics are also included, for quick, out-of-the-box use.
+> **NOTE**: this repository is currently undergoing refactoring to make
+the routines implemented more accessible by external tools and to ensure
+consistency. The version published in Janssens et al 2021 is [available
+tagged as version
+v0.1.0](https://github.com/cloudsci/cloudmetrics/tree/v0.1.0). Progress on
+the refactoring can be followed in issue
+https://github.com/cloudsci/cloudmetrics/issues/20
 
-To use cloudmetrics, it is easiest to clone this repository and follow the commented guidelines in main.py. Make sure to update the package dependencies to those listed in requirements.txt.
+The `cloudmetrics` package contains python routines to compute metrics
+from 2D cloud fields to characterise cloud patterns in these fields. Most
+methods operate on a `cloud-mask` (i.e. a boolean true-false field)
+indicating where clouds exist, some work on individually labelled cloud objects
+(which can be produced from a cloud-mask) and finally some work on 2D cloud
+scalar-fields (defining for example the cloud-liquid water or cloud-top height).
+
+## Implemented metrics
+
+The table below gives an overview over which metrics are avaiable in the
+`cloudmetrics` package and what input each metric takes.
+
+
+| function within `cloudmetrics`     | `mask`   | `object_labels` | `scalar_field` |
+| ---------------------------------- | -------- | --------------- | -------------- |
+| `mask.cloud_fraction`              | ✔️        |                 |                |
+| `mask.fractal_dimension`           | ✔️        |                 |                |
+| `mask.open_sky`                    | ✔️        |                 |                |
+| `mask.orientation`                 | ✔️        |                 |                |
+| `mask.network_nn_dist`             | TODO     |                 |                |
+| `mask.cop`                         | ✔️†       | ✔️               |                |
+| `mask.csd`                         | TODO     | TODO            |                |
+| `objects.iorg`                     | ✔️ #1     | TODO            |                |
+| `objects.iorg_poisson`             | TODO     | TODO            |                |
+| `objects.max_length_scale`         | ✔️†       | ✔️               |                |
+| `objects.mean_eccentricity`        | ✔️†       | ✔️               |                |
+| `objects.mean_length_scale`        | ✔️†       | ✔️               |                |
+| `objects.mean_perimeter_length`    | ✔️†       | ✔️               |                |
+| `objects.rdf`                      | TODO     | TODO            |                |
+| `objects.scai`                     | ✔️†       | ✔️               |                |
+| `scalar.spectral_anisotropy` #2    |          |                 | ✔️              |
+| `scalar.spectral_length_median`#2  |          |                 | ✔️              |
+| `scalar.spectral_length_moment,`#2 |          |                 | ✔️              |
+| `scalar.spectral_slope`#2          |          |                 | ✔️              |
+| `scalar.spectral_slope_binned`#2   |          |                 | ✔️              |
+| `scalar.woi1`                      |          |                 | ✔️              |
+| `scalar.woi2`                      |          |                 | ✔️              |
+| `scalar.woi3`                      |          |                 | ✔️              |
+| `scalar.mean`                      | optional |                 | ✔️              |
+| `scalar.var`                       | optional |                 | ✔️              |
+| `scalar.skew`                      | optional |                 | ✔️              |
+| `scalar.kurtosis`                  | optional |                 | ✔️              |
+
+†: for convenience object-based scalars are also made avaiable to operate
+directly on masks, for example `objects.max_length_scale(object_labels=...)`
+can be called with a mask as `mask.max_object_length_scale(mask=...)`
+
+#1: needs refactoring to use general object labelling and make iorg method
+available to use on object-labels as input
+
+#2: need refactoring to take `scalar_field` as input
+
+# Installation
+
+Until `cloudmetrics` appears on pipy the package can be installed directly
+from github
+
+```bash
+$> pip install git+https://github.com/cloudsci/cloudmetrics
+```
+
+# Usage
+
+To use the `cloudmetrics` package simply import `cloudmetrics` and use the metric function you are interested in:
+
+```python
+import cloudmetrics
+
+iorg = cloudmetrics.iorg(cloud_mask=da_cloudmask)
+```
